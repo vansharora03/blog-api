@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Specify a post schema
 const PostSchema = new mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     title: String,
@@ -9,4 +10,5 @@ const PostSchema = new mongoose.Schema({
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
 });
 
+// Utilize schema to export model
 module.exports = mongoose.model('Post', PostSchema);
