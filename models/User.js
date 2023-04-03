@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
-    can_create: Boolean
+    role: [{type: mongoose.Schema.Types.ObjectId, ref: 'Role'}]
 })
 
 // Utilize schema to export model
