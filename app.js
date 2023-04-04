@@ -3,6 +3,11 @@ var express = require('express');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var path = require('path');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+// Connect to mongodb
+mongoose.connect(process.env.MONGODB);
 
 var indexRouter = require('./routes/index');
 const blogsRouter = require('./routes/blogs');
