@@ -9,6 +9,22 @@ exports.GET_all_posts = async function (req, res, next) {
         res.json(posts);
     } catch (err) {
         // Error occurred
+        err.message = "Something went wrong trying to get all posts";
+        next(err);
+    }
+}
+
+exports.GET_post = async function (req, res, next) {
+    const postId = req.params.postId
+
+    // Attempt to get the post with the postId
+    try {
+        const post = await Post.findById(postId).populate("author").populate("comments");
+        // Got post, send to client
+        res.json(post);
+    } catch (err) {
+        // Error occurred
+        err.message = "Couldn't find post";
         next(err);
     }
 }
