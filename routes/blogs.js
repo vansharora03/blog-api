@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const blogsController = require('../controllers/blogsController');
 
 /** Get main blogs page */
-router.get('/', function(req, res, next) {
-    res.json("Blogs");
-});
-
+router.get('/', blogsController.GET_all_posts);
 module.exports = router;
