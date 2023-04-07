@@ -18,7 +18,11 @@ exports.GET_all_users = async function (req, res, next) {
 exports.GET_user = async function (req, res, next) {
     // Attempt to get user by username
     try {
-        const user = await User.findOne({username: req.params.username});
+        const user = await User.findOne({username: req.params.username}).populate("role");
+        if (!user) {
+            // User does not exist
+            throw new Error();
+        }
         // Send user as JSON
         res.json(user);
     } catch (err) {
