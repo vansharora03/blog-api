@@ -9,7 +9,7 @@ exports.GET_all_posts = async function (req, res, next) {
         res.json(posts);
     } catch (err) {
         // Error occurred
-        err.message = "Something went wrong trying to get all posts";
+        err.message = "Had problems getting all posts";
         next(err);
     }
 }
