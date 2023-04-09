@@ -132,7 +132,7 @@ exports.POST_user = [
             user.save();
         } catch (err) {
             // Pass to error handler
-            next(err);
+            return next(err);
         }
         return res.json("User saved successfully!");
     }
