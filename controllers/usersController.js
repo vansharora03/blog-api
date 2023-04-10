@@ -139,7 +139,7 @@ exports.POST_user = [
     }
 ]
 
-exports.login = passport.authenticate("local", {
+exports.login = passport.authenticate("local", {session: false,
         successRedirect: "/",
-        failureRedirect: "/login"
+        failureRedirect: "/error"
 })
