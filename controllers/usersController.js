@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const {body, validationResult} = require('express-validator');
 const bcrypt = require('bcrypt');
+const passport = require('passport');
 
 // GET all users
 exports.GET_all_users = async function (req, res, next) {
@@ -137,3 +138,8 @@ exports.POST_user = [
         return res.json("User saved successfully!");
     }
 ]
+
+exports.login = passport.authenticate("local", {
+        successRedirect: "/",
+        failureRedirect: "/login"
+})
