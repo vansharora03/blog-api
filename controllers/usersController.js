@@ -141,5 +141,5 @@ exports.POST_user = [
 
 exports.login = passport.authenticate("local", {session: false,
         successRedirect: "/",
-        failureRedirect: "/error"
+        failureRedirect: "/"
 })
