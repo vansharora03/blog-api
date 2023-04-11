@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Role = require('../models/Role');
-const {body, validationResult} = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 // GET all users
 exports.GET_all_users = async function (req, res, next) {
@@ -24,7 +26,7 @@ exports.GET_all_users = async function (req, res, next) {
 exports.GET_user = async function (req, res, next) {
     // Attempt to get user by username
     try {
-        const user = await User.findOne({username: req.params.username}).populate("role");
+        const user = await User.findOne({ username: req.params.username }).populate("role");
         if (!user) {
             // User does not exist
             throw new Error();
@@ -38,25 +40,25 @@ exports.GET_user = async function (req, res, next) {
     }
 }
 
-const validatePOSTUser =  [
+const validatePOSTUser = [
     // Validate and sanitize
     body("first_name")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .withMessage("First name is required")
         .bail()
         .isAlphanumeric()
         .withMessage("First name must contain only letters and numbers"),
     body("last_name")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .withMessage("Last name is required")
         .bail()
         .isAlphanumeric()
         .withMessage("Last name must contain only letters and numbers"),
     body("username")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .escape()
         .withMessage("Username is required")
         .bail()
@@ -64,15 +66,15 @@ const validatePOSTUser =  [
         .withMessage("Username must contain only numbers and letters"),
     body("email")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .withMessage("Email is required"),
     body("password")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .escape()
         .withMessage("Password is required")
         .bail()
-        .isLength({min: 8})
+        .isLength({ min: 8 })
         .withMessage("Password must be at least 8 characters"),
     body("confirm_password")
         .trim()
@@ -94,7 +96,7 @@ const validatePOSTUser =  [
 
 // POST user middleware functions
 exports.POST_user = [
-   validatePOSTUser,
+    validatePOSTUser,
     async (req, res, next) => {
         // Extract validation errors
         const errors = validationResult(req);
@@ -102,7 +104,7 @@ exports.POST_user = [
             // Send errors in validation
             return res.json(errors.array());
         }
-        
+
         // Ensure the username is unique
         found = await User.findOne({ username: req.body.username });
         if (found) {
@@ -117,7 +119,7 @@ exports.POST_user = [
         // hash password
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
-        const defaultRole = await Role.findOne({name: 'commenter'});
+        const defaultRole = await Role.findOne({ name: 'commenter' });
 
         const user = new User({
             first_name: req.body.first_name,
@@ -139,7 +141,14 @@ exports.POST_user = [
     }
 ]
 
-exports.login = passport.authenticate("local", {session: false,
-        successRedirect: "/",
-        failureRedirect: "/"
-})
+// Log user in and send token to client
+exports.login = [passport.authenticate("local", { session: false }),
+(req, res) => {
+    // Sign and create a token if login is successful
+    const token = jwt.sign(req.user.toJSON(), process.env.SECRET_KEY);
+    // Send token to client
+    res.json(token);
+}]
+
+// Ensure that the users token is valid (to be used on authenticated routes)
+const authenticateFromJwt = passport.authenticate("jwt", { session: false });

@@ -9,6 +9,8 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const User = require('./models/User');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
 require('dotenv').config();
 
 // Connect to mongodb
@@ -28,7 +30,7 @@ var app = express();
 passport.use(new LocalStrategy(async (username, password, done) => {
   try {
     const user = await User.findOne({ username });
-    
+
     // invalid username
     if (!user) {
       return done(null, false, {message: 'Invalid username or password'});
@@ -46,6 +48,25 @@ passport.use(new LocalStrategy(async (username, password, done) => {
 
   } catch (err) {
     return done(err);
+  }
+}))
+
+// passport-jwt configuration
+const options = {secretOrKey: process.env.SECRET_KEY, jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()};
+passport.use(new JwtStrategy(options, async (payload, done) => {
+  try {
+    // Find user
+    const user = await User.findOne({username: payload.username});
+    if (user) {
+      // Found user
+      done(null, user);
+    } else {
+      // No user found
+      done(null, false);
+    }
+  } catch (err) {
+    // Error occurred
+    done(err, false);
   }
 }))
 
