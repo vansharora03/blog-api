@@ -75,6 +75,12 @@ exports.POST_post = [
             return res.json(errors.array());
         }
         const author = await User.findOne({username: req.user.username});
+        const found = await Post.findOne({title: req.body.title});
+        if (found) {
+            const err = new Error(`Title: ${found.title} is already taken.`);
+            err.status = 400;
+            return next(err);
+        }
         // No errors, begin saving
         const post = new Post({
             author,
@@ -87,7 +93,7 @@ exports.POST_post = [
         try {
             await post.save()
         } catch (err) {
-            next(err);
+            return next(err);
         }
         return res.json(post);
     }
