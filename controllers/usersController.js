@@ -7,7 +7,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// GET all users
+/** GET all users */
 exports.GET_all_users = async function (req, res, next) {
     // Attempt to get all users from database
     try {
@@ -22,7 +22,7 @@ exports.GET_all_users = async function (req, res, next) {
 }
 
 
-// GET user by username
+/** GET user by username */
 exports.GET_user = async function (req, res, next) {
     // Attempt to get user by username
     try {
@@ -40,6 +40,7 @@ exports.GET_user = async function (req, res, next) {
     }
 }
 
+/** Validate and sanitize data */
 const validatePOSTUser = [
     // Validate and sanitize
     body("first_name")
@@ -94,7 +95,7 @@ const validatePOSTUser = [
         .withMessage("Passwords must match.")
 ]
 
-// POST user middleware functions
+/** POST user middleware functions */
 exports.POST_user = [
     validatePOSTUser,
     async (req, res, next) => {
@@ -132,7 +133,7 @@ exports.POST_user = [
 
         // Attempt to save user
         try {
-            user.save();
+            await user.save();
         } catch (err) {
             // Pass to error handler
             return next(err);
@@ -141,7 +142,7 @@ exports.POST_user = [
     }
 ]
 
-// Log user in and send token to client
+/** Log user in and send token to client */
 exports.login = [passport.authenticate("local", { session: false }),
 (req, res) => {
     // Sign and create a token if login is successful
@@ -150,5 +151,5 @@ exports.login = [passport.authenticate("local", { session: false }),
     res.json(token);
 }]
 
-// Ensure that the users token is valid (to be used on authenticated routes)
-const authenticateFromJwt = passport.authenticate("jwt", { session: false });
+/** Ensure that the users token is valid (to be used on authenticated routes) */
+exports.authenticateFromJwt = passport.authenticate("jwt", { session: false });

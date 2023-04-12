@@ -19,7 +19,7 @@ mongoose.connect(process.env.MONGODB);
 // Require routes
 var indexRouter = require('./routes/index');
 const blogsRouter = require('./routes/blogs');
-const usersRouter = require('./routes/users'); 
+const usersRouter = require('./routes/users');
 const signupRouter = require('./routes/signup');
 const loginRouter = require('./routes/login');
 
@@ -29,11 +29,11 @@ var app = express();
 // Passport configuration
 passport.use(new LocalStrategy(async (username, password, done) => {
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).populate("role");
 
     // invalid username
     if (!user) {
-      return done(null, false, {message: 'Invalid username or password'});
+      return done(null, false, { message: 'Invalid username or password' });
     }
 
     // check password
@@ -42,7 +42,7 @@ passport.use(new LocalStrategy(async (username, password, done) => {
         // passwords match, log in
         return done(null, user)
       } else {
-        return done(null, false, {message: 'Invalid username or password'});
+        return done(null, false, { message: 'Invalid username or password' });
       }
     });
 
@@ -52,11 +52,11 @@ passport.use(new LocalStrategy(async (username, password, done) => {
 }))
 
 // passport-jwt configuration
-const options = {secretOrKey: process.env.SECRET_KEY, jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()};
+const options = { secretOrKey: process.env.SECRET_KEY, jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() };
 passport.use(new JwtStrategy(options, async (payload, done) => {
   try {
     // Find user
-    const user = await User.findOne({username: payload.username});
+    const user = await User.findOne({ username: payload.username }).populate("role");
     if (user) {
       // Found user
       done(null, user);
@@ -84,12 +84,12 @@ app.use('/signup', signupRouter);
 app.use('/login', loginRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

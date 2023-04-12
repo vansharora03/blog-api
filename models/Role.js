@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Specify a role schema
+/** Specify a role schema */
 const RoleScehma = new mongoose.Schema({
     name: String
 });

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Specify a post schema
+/** Specify a post schema */
 const PostSchema = new mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     title: String,
