@@ -38,14 +38,14 @@ exports.GET_post = async function (req, res, next) {
 const validatePOSTPost = [
     body("title")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .escape()
         .withMessage("Title is required.")
-        .isLength({max: 100})
+        .isLength({ max: 100 })
         .withMessage("Title must be less than 100 characters."),
     body("content")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .escape()
         .withMessage("Post must have content."),
 ]
@@ -74,8 +74,8 @@ exports.POST_post = [
             // There are errors, send them
             return res.json(errors.array());
         }
-        const author = await User.findOne({username: req.user.username});
-        const found = await Post.findOne({title: req.body.title});
+        const author = await User.findOne({ username: req.user.username });
+        const found = await Post.findOne({ title: req.body.title });
         if (found) {
             const err = new Error(`Title: ${found.title} is already taken.`);
             err.status = 400;
