@@ -8,6 +8,9 @@ router.get('/', blogsController.GET_all_posts);
 /** Get a specific blog post */
 router.get('/:postId', blogsController.GET_post);
 
+/** Update a specific blog post */
+router.put('/:postId', blogsController.PUT_post);
+
 /** Post a comment */
 router.post('/:postId/comments', blogsController.POST_comment);
 

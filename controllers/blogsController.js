@@ -4,7 +4,7 @@ const Comment = require('../models/Comment');
 const mongoose = require('mongoose');
 const authenticate = require('./usersController').authenticateFromJwt;
 const { body, validationResult } = require('express-validator');
-  
+
 
 /** Get all blog posts */
 exports.GET_all_posts = async function (req, res, next) {
@@ -50,7 +50,7 @@ const validatePOSTPost = [
         .trim()
         .isLength({ min: 1 })
         .escape()
-        .withMessage("Post must have content."),
+        .withMessage("Post must have content.")
 ]
 
 /** Post a blog post */
@@ -89,7 +89,7 @@ exports.POST_post = [
             author,
             title: req.body.title,
             content: req.body.content,
-            is_published: false,
+            is_published: req.body.published,
         })
 
         // Attempt to save post
@@ -104,14 +104,51 @@ exports.POST_post = [
 
 ]
 
+exports.PUT_post = [
+    authenticate,
+    // Ensure that user is a creator
+    (req, res, next) => {
+        if (req.user.role.length > 1 && req.user.role[1].name === "creator") {
+            // Continue if user is creator
+            next()
+        } else {
+            // Pass to error handler otherwise
+            const err = new Error(`User: ${req.user.username} is not a creator`);
+            err.status = 403;
+            next(err);
+        }
+    },
+    validatePOSTPost,
+    async (req, res, next) => {
+        // Extract errors
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.json(errors.array());
+        }
+
+        // Attempt to put post
+        try {
+            await Post.findByIdAndUpdate(req.params.postId, {
+                title: req.body.title,
+                content: req.body.content,
+                is_published: req.body.published,
+            })
+            return res.json("Updated post!")
+        } catch (err) {
+            next(err);
+        }
+    }
+]
+
 /** Validate and sanitize comment */
 const validateComment = [
     body("content")
         .trim()
-        .isLength({min: 1})
+        .isLength({ min: 1 })
         .escape()
         .withMessage("Comment cannot be empty.")
-        .isLength({max: 200})
+        .isLength({ max: 200 })
         .withMessage("Comment must not exceed 200 characters.")
 ]
 
@@ -123,7 +160,7 @@ exports.POST_comment = [
         // Extract errors
         const errors = validationResult(req);
 
-        if(!errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             // Send errors
             return res.json(errors.array());
         }
@@ -135,8 +172,8 @@ exports.POST_comment = [
         // Get comments array
         const comments = post.comments;
         // Get user
-        const author = await User.findOne({username: req.user.username});
-        
+        const author = await User.findOne({ username: req.user.username });
+
         // Create new comment
         const comment = new Comment({
             author,
@@ -149,7 +186,7 @@ exports.POST_comment = [
             await comment.save();
             // Push comment to comments array
             comments.push(comment);
-            await Post.findByIdAndUpdate(req.params.postId, {comments})
+            await Post.findByIdAndUpdate(req.params.postId, { comments })
             res.json(comment);
         } catch (err) {
             next(err);
