@@ -9,7 +9,7 @@ router.get('/', blogsController.GET_all_posts);
 router.get('/:postId', blogsController.GET_post);
 
 /** Post a comment */
-router.post('/:postId', blogsController.POST_comment);
+router.post('/:postId/comments', blogsController.POST_comment);
 
 /** Post a blog post */
 router.post('/', blogsController.POST_post);
