@@ -1,8 +1,10 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Comment = require('../models/Comment');
 const mongoose = require('mongoose');
 const authenticate = require('./usersController').authenticateFromJwt;
 const { body, validationResult } = require('express-validator');
+  
 
 /** Get all blog posts */
 exports.GET_all_posts = async function (req, res, next) {
@@ -24,15 +26,16 @@ exports.GET_post = async function (req, res, next) {
 
     // Attempt to get the post with the postId
     try {
-        const post = await Post.findById(postId).populate("author").populate("comments");
+        const post = await Post.findById(postId).populate("author comments");
         // Got post, send to client
         res.json(post);
     } catch (err) {
         // Error occurred
-        err.message = "Couldn't find post";
+        err.message = err.toString();
         next(err);
     }
 }
+
 
 /** Validate and sanitize post data */
 const validatePOSTPost = [
@@ -99,4 +102,57 @@ exports.POST_post = [
     }
 
 
+]
+
+/** Validate and sanitize comment */
+const validateComment = [
+    body("content")
+        .trim()
+        .isLength({min: 1})
+        .escape()
+        .withMessage("Comment cannot be empty.")
+        .isLength({max: 200})
+        .withMessage("Comment must not exceed 200 characters.")
+]
+
+/** POST comment to certain blog */
+exports.POST_comment = [
+    authenticate,
+    validateComment,
+    async (req, res, next) => {
+        // Extract errors
+        const errors = validationResult(req);
+
+        if(!errors.isEmpty()) {
+            // Send errors
+            return res.json(errors.array());
+        }
+
+        // Attempt to save comment
+
+        // Get post
+        const post = await Post.findById(req.params.postId).populate("author comments");
+        // Get comments array
+        const comments = post.comments;
+        // Get user
+        const author = await User.findOne({username: req.user.username});
+        
+        // Create new comment
+        const comment = new Comment({
+            author,
+            content: req.body.content,
+            time_stamp: new Date()
+        })
+
+        try {
+            // Save comment to database
+            await comment.save();
+            // Push comment to comments array
+            comments.push(comment);
+            await Post.findByIdAndUpdate(req.params.postId, {comments})
+            res.json(comment);
+        } catch (err) {
+            next(err);
+        }
+    }
 ]
